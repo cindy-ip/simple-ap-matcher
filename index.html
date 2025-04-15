@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple PO-Invoice Matcher</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; }
+    label { display: block; margin-top: 1rem; }
+    input[type="file"] { margin-top: 0.5rem; }
+    button { margin-top: 1.5rem; padding: 0.5rem 1rem; }
+    .result { margin-top: 2rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Simple PO-Invoice Matcher</h1>
+  <p>Upload your Quote (PO) and Invoice as image files. The app will extract the "Total" and "PO#" from each and check if they match.</p>
+  
+  <label for="quoteFile">Upload Quote (PO):</label>
+  <input type="file" id="quoteFile" accept="image/*">
+
+  <label for="invoiceFile">Upload Invoice:</label>
+  <input type="file" id="invoiceFile" accept="image/*">
+
+  <button id="compareBtn">Compare Documents</button>
+
+  <div class="result" id="result"></div>
+
+  <!-- Tesseract.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  
+  <script>
+    // Utility function: Use Tesseract.js to extract text from an image file
+    async function extractText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async function() {
+          try {
+            const { data } = await Tesseract.recognize(reader.result, 'eng', {
+              logger: m => console.log(m) // Log progress
+            });
+            resolve(data.text);
+          } catch (error) {
+            reject(error);
+          }
+        }
+        reader.onerror = () => reject('Error reading file');
+        reader.readAsDataURL(file);
+      });
+    }
+    
+    // Utility function: extract total amount using regex
+    function extractTotalAmount(text) {
+      // Looks for 'total' followed by an optional colon, optional dollar sign, then a number (e.g., "Total: $1500.00")
+      const regex = /total[:\s]*\$?(\d+(?:[.,]\d{1,2})?)/i;
+      const match = text.match(regex);
+      if (match && match[1]) {
+        return parseFloat(match[1].replace(/,/g, ''));
+      }
+      return null;
+    }
+    
+    // Utility function: extract PO number using regex (e.g., "PO#: 12345")
+    function extractPONumber(text) {
+      const regex = /PO#[:\s]*([\w-]+)/i;
+      const match = text.match(regex);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+      return null;
+    }
+    
+    // Main function: process both files when the button is clicked
+    document.getElementById('compareBtn').addEventListener('click', async () => {
+      const quoteFile = document.getElementById('quoteFile').files[0];
+      const invoiceFile = document.getElementById('invoiceFile').files[0];
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = 'Processing...';
+
+      if (!quoteFile || !invoiceFile) {
+        resultDiv.textContent = 'Please upload both files.';
+        return;
+      }
+      
+      try {
+        // Extract text from both files
+        const [quoteText, invoiceText] = await Promise.all([
+          extractText(quoteFile),
+          extractText(invoiceFile)
+        ]);
+        
+        // Extract totals and PO numbers using the regex functions
+        const quoteTotal = extractTotalAmount(quoteText);
+        const invoiceTotal = extractTotalAmount(invoiceText);
+        const quotePO = extractPONumber(quoteText);
+        const invoicePO = extractPONumber(invoiceText);
+        
+        // Validate extraction results
+        if (quotePO === null) {
+          resultDiv.textContent = 'Could not find the PO number in the Quote (PO).';
+          return;
+        }
+        if (invoicePO === null) {
+          resultDiv.textContent = 'Could not find the PO number in the Invoice.';
+          return;
+        }
+        if (quoteTotal === null) {
+          resultDiv.textContent = 'Could not find the total amount in the Quote (PO).';
+          return;
+        }
+        if (invoiceTotal === null) {
+          resultDiv.textContent = 'Could not find the total amount in the Invoice.';
+          return;
+        }
+        
+        // Compare the PO numbers and totals
+        let message = '';
+        if (quotePO === invoicePO) {
+          message += `✅ PO Numbers match (${quotePO}). `;
+        } else {
+          message += `⚠️ PO Number mismatch! Quote PO: ${quotePO} vs Invoice PO: ${invoicePO}. `;
+        }
+        
+        if (quoteTotal === invoiceTotal) {
+          message += `✅ Totals match at $${quoteTotal.toFixed(2)}.`;
+        } else {
+          const difference = Math.abs(quoteTotal - invoiceTotal);
+          message += `⚠️ Total amount mismatch! Quote total: $${quoteTotal.toFixed(2)}, Invoice total: $${invoiceTotal.toFixed(2)}. Difference: $${difference.toFixed(2)}.`;
+        }
+        
+        resultDiv.textContent = message;
+      } catch (error) {
+        console.error(error);
+        resultDiv.textContent = 'An error occurred during processing. Check console for details.';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Generate Dummy Images</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; }
+    canvas { border: 1px solid #ccc; margin: 1em 0; }
+    button { padding: 0.5rem 1rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Dummy Quote & Invoice Generator</h1>
+  <p>Click the button to generate dummy images. Then right-click on each image and select “Save image as…” to download them.</p>
+  <button id="generateBtn">Generate Dummy Images</button>
+  
+  <div>
+    <h3>Quote (PO):</h3>
+    <canvas id="quoteCanvas" width="400" height="200"></canvas>
+  </div>
+  
+  <div>
+    <h3>Invoice:</h3>
+    <canvas id="invoiceCanvas" width="400" height="200"></canvas>
+  </div>
+  
+  <script>
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      // Define a dummy PO number to use on both documents
+      const dummyPONumber = '12345';
+      
+      // Generate dummy quote image
+      const quoteCanvas = document.getElementById('quoteCanvas');
+      const qCtx = quoteCanvas.getContext('2d');
+      qCtx.fillStyle = '#FFF';
+      qCtx.fillRect(0, 0, quoteCanvas.width, quoteCanvas.height);
+      qCtx.fillStyle = '#000';
+      qCtx.font = '18px Arial';
+      qCtx.fillText('Quote / PO', 10, 30);
+      qCtx.fillText('Vendor: ABC Inc.', 10, 60);
+      // Draw the PO number line
+      qCtx.fillText('PO#: ' + dummyPONumber, 10, 90);
+      qCtx.fillText('Item: Test Service', 10, 120);
+      qCtx.fillText('Total: $1500.00', 10, 150);
+      
+      // Generate dummy invoice image
+      const invoiceCanvas = document.getElementById('invoiceCanvas');
+      const iCtx = invoiceCanvas.getContext('2d');
+      iCtx.fillStyle = '#FFF';
+      iCtx.fillRect(0, 0, invoiceCanvas.width, invoiceCanvas.height);
+      iCtx.fillStyle = '#000';
+      iCtx.font = '18px Arial';
+      iCtx.fillText('Invoice', 10, 30);
+      iCtx.fillText('Vendor: ABC Inc.', 10, 60);
+      // Draw the PO number line
+      iCtx.fillText('PO#: ' + dummyPONumber, 10, 90);
+      iCtx.fillText('Item: Test Service', 10, 120);
+      iCtx.fillText('Total: $1500.00', 10, 150);
+    });
+  </script>
+</body>
+</html>
