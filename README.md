@@ -27,13 +27,8 @@ It uses **Tesseract.js** (a browser-based OCR library) to read text from uploade
 
 ## 🚀 Getting Started
 
-### Option 1: Run Locally
+### Run Locally
 
 1. Clone or download the repo.
 2. Open `index.html` in your browser.
 3. Use `dummy.html` to generate test images, or upload your own quote/invoice images.
-
-### Option 2: View Live on GitHub Pages (if deployed)
-
-```bash
-https://yourusername.github.io/simple-po-invoice-matcher/
