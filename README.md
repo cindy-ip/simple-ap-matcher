@@ -46,7 +46,3 @@ This project was developed to demonstrate that accounts payable workflows—spec
 ### Deploy
 
 This app is fully static and can be deployed using GitHub Pages or any static site host (e.g., Netlify, Vercel).
-
----
-
-Let me know if you’d like to expand this into a full workflow tool, integrate PDF support, or enhance the UI for broader business use cases.
